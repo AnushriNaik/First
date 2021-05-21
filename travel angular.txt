@@ -1,0 +1,156 @@
+Travel.component.html
+--------
+<h1>Travel Help</h1>
+<form (ngSubmit)="createTravel()" >  
+<div class="mb-3">
+    <label for="Travel" class="form-label">Name</label>
+    <input type="text" [(ngModel)]="travel.name" name="name"  class="form-control" id="t1">
+  </div>
+  <div class="mb-3">
+    <label for="Travel" class="form-label">Email ID</label>
+    <input type="email" [(ngModel)]="travel.email" name="email" class="form-control" id="t2"  aria-describedby="emailHelp">
+    <div id="emailHelp" class="form-text">We'll never share your Email ID with anyone else.</div>
+  
+  </div>
+  <div class="mb-3">
+    <label for="Travel" class="form-label">Present Address</label>
+    <input type="text" [(ngModel)]="travel.paddress" name="paddress" class="form-control" id="t3">
+  </div>
+  <div class="mb-3">
+    <label for="Travel" class="form-label">Destination Address</label>
+    <input type="text" [(ngModel)]="travel.daddress" name="daddress" class="form-control" id="t4" >
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+----------
+
+
+Travel.component.ts
+-----
+
+import { Component, OnInit } from '@angular/core';
+import { TravelService } from './../Travel.service';
+import { Travel } from '../Travel';
+import { HttpClientModule } from '@angular/common/http';
+import {Router } from '@angular/router';
+@Component({
+  selector: 'app-trav',
+  templateUrl: './Travel.component.html',
+})
+export class TravelComp implements OnInit {
+  // form backing object
+  travel!:Travel;
+  // message to ui
+  message!: string;
+  // inject service class
+  constructor(private service: TravelService,private http: HttpClientModule) { }
+  ngOnInit(): void {
+    // when page is loaded clear form data
+    this.travel! = new Travel();
+  }
+  // tslint:disable-next-line: typedef
+  createTravel() {
+    this.service.createTravel(this.travel!)
+    .subscribe(data => {
+      this.message = data; // read message
+      this.travel! = new Travel(); // clear form
+    }, error => {
+      console.log(error);
+    });
+  }
+}
+
+---------
+
+appmodule.ts
+----
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+//import {TravelComponent} from './Travelform/Travelform.component'
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent} from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {TravelService} from './Travel.service';
+import { FormsModule } from '@angular/forms';
+import {TravelComp} from './Travel/Travel.component'
+import {Travel} from './Travel';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
+@NgModule({
+  declarations: [
+    AppComponent,
+    TravelComp,
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    FormsModule
+  ],
+  providers: [TravelService],
+  bootstrap: [TravelComp]
+})
+export class AppModule { }
+
+
+----
+
+Travel.service.ts
+----
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import {Travel} from './Travel';
+
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TravelService {
+    
+  private basePath = 'http://localhost:8093/rest/Travel';
+
+  constructor(private http: HttpClient) { 
+      
+  }
+
+
+  getAllTravel(): Observable<Travel[]> {
+    return this.http.get<Travel[]>(`${this.basePath}/view`);
+  }
+  createTravel(travel: Travel): Observable<any> {
+    return this.http.post(`${this.basePath}/add`, travel, {responseType: 'text'});
+  }
+
+}
+----
+
+Travel.ts
+---
+export class Travel 
+{
+        public email!: string;
+        public name!: string;
+        public paddress!:string;
+       public daddress!: string;
+}
+----
+index.html
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>RLL Project</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+</head>
+<body class="mat-typography">
+  <app-trav></app-trav>
+</body>
+</html>
